@@ -11,6 +11,8 @@ namespace Skyjo.WindowManager
 {
     public class NavigationService
     {
+        public event Action<GameModel>? GameModelUpdated;
+
         private System.Windows.Window? _currentWindow;
 
         public GameModel ShareGameModel;
@@ -26,6 +28,24 @@ namespace Skyjo.WindowManager
             _currentWindow = null;
             ShareGameModel = new GameModel();
         }
+
+        public void NextPlayer(GameModel gameModel)
+        {
+            ShareGameModel = gameModel;
+            ShareGameModel.Next();
+
+            GameModelUpdated?.Invoke(ShareGameModel);
+
+            if (ShareGameModel.CurrentPlayerIndex != 0)
+            {
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    ShareGameModel = ShareGameModel.PlayAutoTurn();
+                    NextPlayer(ShareGameModel);
+                }), System.Windows.Threading.DispatcherPriority.Background);
+            }
+        }
+
 
         public void NavigateTo(string viewName, Guid playerId = default)
         {

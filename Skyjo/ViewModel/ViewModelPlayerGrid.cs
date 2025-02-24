@@ -23,7 +23,7 @@ namespace Skyjo.ViewModel
         #endregion
 
         #region Field et Properties
-        private readonly PlayerGrid _playerGrid;
+        private PlayerGrid _playerGrid;
 
         /// <summary>
         /// The row count
@@ -56,22 +56,73 @@ namespace Skyjo.ViewModel
                 {
                     var c = _playerGrid.GetCard(i, j);
                     if (c != null)
-                        Cards.Add(new ViewModelCard(c));
+                        Cards.Add(new ViewModelCard(c, i, j));
                 }
             }
-
-            RaisePropertyChanged(nameof(RowCount));
-            RaisePropertyChanged(nameof(ColumnCount));
-            RaisePropertyChanged(nameof(Cards));
+            DisplayUpdate();
         }
         #endregion
 
         #region Methods
 
         #region Private and Protected Methods
+        /// <summary>
+        /// Display update
+        /// </summary>
+        private void DisplayUpdate()
+        {
+            RaisePropertyChanged(nameof(RowCount));
+            RaisePropertyChanged(nameof(ColumnCount));
+            RaisePropertyChanged(nameof(Cards));
+        }
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// Get a specific card
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public ViewModelCard? GetCard(int i, int y)
+        {
+            foreach (ViewModelCard vmc in Cards)
+            {
+                if (vmc.Position.Item1 == i && vmc.Position.Item2 == y)
+                {
+                    return vmc;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Set Card
+        /// </summary>
+        /// <param name="Card"></param>
+        /// <param name="z"></param>
+        /// <param name="a"></param>
+        public void SetCard(ViewModelCard Card, int z, int a)
+        {
+            _playerGrid.SetCard(z, a, Card.CardObject);
+            Cards.Clear();
+            for (int i = 0; i < RowCount; i++)
+            {
+                for (int j = 0; j < ColumnCount; j++)
+                {
+                    var c = _playerGrid.GetCard(i, j);
+                    if (c != null)
+                        Cards.Add(new ViewModelCard(c, i, j));
+                }
+            }
+            DisplayUpdate();
+        }
+
+        public void ChangeVisibility(bool visible, int i, int j)
+        {
+            _playerGrid.GetCard(i, j).IsVisible = visible;
+            DisplayUpdate();
+        }
         #endregion
 
         #endregion

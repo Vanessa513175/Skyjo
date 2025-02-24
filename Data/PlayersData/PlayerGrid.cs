@@ -20,8 +20,8 @@ namespace Data.PlayersData
 
         #region Fields et Properties
 
-        private readonly int _height;
-        private readonly int _width;
+        public readonly int Height;
+        public readonly int Width;
         /// <summary>
         /// The matrix cards
         /// </summary>
@@ -37,8 +37,8 @@ namespace Data.PlayersData
         /// <param name="width"></param>
         public PlayerGrid(int height, int width)
         {
-            _height = height;
-            _width = width;
+            Height = height;
+            Width = width;
             Cards = new Card[height, width];
         }
 
@@ -58,7 +58,7 @@ namespace Data.PlayersData
         /// <param name="card"></param>
         public void SetCard(int row, int col, Card card)
         {
-            if (row >= 0 && row < _height && col >= 0 && col < _width)
+            if (row >= 0 && row < Height && col >= 0 && col < Width)
             {
                 Cards[row, col] = card;
             }
@@ -72,7 +72,7 @@ namespace Data.PlayersData
         /// <param name="visible"></param>
         public void SetVisibility(int row, int col, bool visible)
         {
-            if (row >= 0 && row < _height && col >= 0 && col < _width)
+            if (row >= 0 && row < Height && col >= 0 && col < Width)
             {
                 Cards[row, col].IsVisible = visible;
             }
@@ -86,7 +86,7 @@ namespace Data.PlayersData
         /// <returns></returns>
         public Card? GetCard(int row, int col)
         {
-            if (row >= 0 && row < _height && col >= 0 && col < _width)
+            if (row >= 0 && row < Height && col >= 0 && col < Width)
             {
                 return Cards[row, col];
             }
@@ -99,9 +99,9 @@ namespace Data.PlayersData
         public String PrintGrid()
         {
             string result = "";
-            for (int i = 0; i < _height; i++)
+            for (int i = 0; i < Height; i++)
             {
-                for (int j = 0; j < _width; j++)
+                for (int j = 0; j < Width; j++)
                 {
                     result+=($"{Cards[i, j].ToString}\t");
                 }
@@ -116,7 +116,7 @@ namespace Data.PlayersData
         /// <exception cref="NotImplementedException"></exception>
         public void Clear()
         {
-            Cards = new Card[_height, _width];
+            Cards = new Card[Height, Width];
         }
 
         /// <summary>
@@ -126,9 +126,9 @@ namespace Data.PlayersData
         public int GetCurrentScore()
         {
             int score = 0;
-            for (int i = 0; i < _height; i++)
+            for (int i = 0; i < Height; i++)
             {
-                for (int j = 0; j < _width; j++)
+                for (int j = 0; j < Width; j++)
                 {
                     if (Cards[i, j].IsVisible)
                         score += Cards[i, j].Value;

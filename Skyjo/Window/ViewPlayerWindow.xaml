@@ -95,6 +95,28 @@
                     <localUserControl:ViewPlayerGrid DataContext="{Binding CurrentPlayerGrid}" Height="Auto" Width="Auto" Margin="0, 35, 0, 0"/>
                 </StackPanel>
             </Border>
+
+            <!-- Control -->
+            <Border Grid.Row="2" Grid.Column="2" BorderBrush="Black" BorderThickness="1" Padding="10" Margin="5" IsEnabled="{Binding IsPlayerTurn}" Visibility="{Binding VisibilityCommand}" >
+                <StackPanel HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Phase : " FontSize="20" Margin="0, 0, 20, 0"></TextBlock>
+                        <TextBlock Text="{Binding CurrentPhase}" FontSize="20"></TextBlock>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" IsEnabled="{Binding IsInitialisationPhase}" Visibility="{Binding VisibilityCommandInitialization}">
+                        <Button Content="Retourner les cartes" FontSize="12" Margin="0, 20, 0, 0" Command="{Binding TurnOverFirstTwoCards}"></Button>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" IsEnabled="{Binding IsPlayingPhase}" Visibility="{Binding VisibilityCommandPlaying}">
+                        <localUserControl:ViewCard DataContext="{Binding DrawnCard}" ></localUserControl:ViewCard>
+                        <Button Content="Jeter la carte" FontSize="12" Margin="0, 10, 0, 0"  Command="{Binding ThrowAwayDrawnCard}"></Button>
+                        <Button Content="Echanger avec la carte sélectionnée" FontSize="12" Margin="0, 10, 0, 0" Command="{Binding ExchangeCards}"></Button>
+                        <Button Content="Retourner la carte" FontSize="12" Margin="0, 10, 0, 0" Command="{Binding ReturnCard}"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
         </Grid>
 
     </Grid>

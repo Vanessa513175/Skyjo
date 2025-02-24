@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Skyjo.ViewModel;
 
 namespace Skyjo.UserControl
 {
@@ -23,6 +24,14 @@ namespace Skyjo.UserControl
         public ViewCard()
         {
             InitializeComponent();
+        }
+
+        private void Border_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is ViewModelCard vm)
+            {
+                vm.ToggleSelection();
+            }
         }
     }
 }

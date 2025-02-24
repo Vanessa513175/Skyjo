@@ -34,9 +34,6 @@
                      DisplayMemberPath="Name" 
                      Height="180" 
                      ItemsSource="{Binding PlayersToAdd}" />
-            <Button Content="+" Width="40" Height="40" FontSize="24" 
-                    HorizontalAlignment="Center" VerticalAlignment="Center" 
-                    Margin="0,20" Command="{Binding AddPlayerCommand}"/>
         </StackPanel>
 
 

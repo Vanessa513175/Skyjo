@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Core;
+using Core.RelayCommand;
 using Data.SkyjoData;
 
 namespace Skyjo.ViewModel
@@ -14,14 +16,15 @@ namespace Skyjo.ViewModel
         #endregion
 
         #region Constants
-        private const string DEFAULT_CARD_COLOR = "Black";
+        private const string DEFAULT_CARD_COLOR = "Gray";
         #endregion
 
         #region Events
+        public ICommand SelectCardCommand { get; }
         #endregion
 
         #region Field et Properties
-        private Card _cardObject;
+        public Card CardObject;
 
         /// <summary>
         /// Color of the card
@@ -30,8 +33,8 @@ namespace Skyjo.ViewModel
         {
             get 
             { 
-                if (_cardObject.IsVisible)
-                    return _cardObject.Color;
+                if (CardObject.IsVisible)
+                    return CardObject.Color;
                 else
                     return DEFAULT_CARD_COLOR;
             }
@@ -44,14 +47,28 @@ namespace Skyjo.ViewModel
         {
             get 
             {
-                if (_cardObject.IsVisible)
-                    return _cardObject.Value.ToString();
+                if (CardObject.IsVisible)
+                    return CardObject.Value.ToString();
                 else
                     return String.Empty;
             }
         }
 
+        private bool _isSelected;
+        /// <summary>
+        /// Check if card is selected
+        /// </summary>
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                _isSelected = value;
+                RaisePropertyChanged(nameof(IsSelected));
+            }
+        }
 
+        public  readonly Tuple<int, int> Position;
         #endregion
 
         #region Constructor
@@ -59,11 +76,13 @@ namespace Skyjo.ViewModel
         /// Default constructor
         /// </summary>
         /// <param name="card"></param>
-        public ViewModelCard (Card card)
+        public ViewModelCard (Card card, int i, int y)
         {
-            _cardObject = card;
+            CardObject = card;
+            SelectCardCommand = new RelayCommand(ToggleSelection);
             RaisePropertyChanged(nameof(Color));
             RaisePropertyChanged(nameof(Value));
+            Position = new Tuple<int, int> (i, y);
         }
         #endregion
 
@@ -73,6 +92,24 @@ namespace Skyjo.ViewModel
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// Toggle selection
+        /// </summary>
+        public void ToggleSelection()
+        {
+            IsSelected = !IsSelected;
+        }
+
+        /// <summary>
+        /// Change visibility of card
+        /// </summary>
+        /// <param name="visible"></param>
+        public void ChangeVisibility (bool visible)
+        {
+            CardObject.IsVisible = visible;
+            RaisePropertyChanged(nameof(Color));
+            RaisePropertyChanged(nameof(Value));
+        }
         #endregion
 
         #endregion

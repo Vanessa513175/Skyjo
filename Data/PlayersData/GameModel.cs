@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core;
+using Data.AutoGame;
 using Data.SkyjoData;
 
 namespace Data.PlayersData
@@ -12,11 +13,20 @@ namespace Data.PlayersData
     public class GameModel : INotifyPropertyChanged
     {
         #region Enum
+        public enum EGamePhase
+        {
+            Initialization,
+            Playing,          
+            End               
+        }
+
         #endregion
 
         #region Constants
         public const int DEFAULT_HEIGHT_MATRIX = 3;
         public const int DEFAULT_WIDTH_MATRIX = 4;
+
+        private const int TIME_BETWEEN_TWO_PLAYERS = 5000;
         #endregion
 
         #region Events
@@ -57,6 +67,10 @@ namespace Data.PlayersData
             get { return _currentDeck; }
             set { SetField(ref _currentDeck, value, nameof(CurrentDeck)); }
         }
+
+        public EGamePhase GamePhase;
+
+        public int CurrentPlayerIndex;
         #endregion
 
         #region Constructor
@@ -66,7 +80,9 @@ namespace Data.PlayersData
         public GameModel()
         {
             _players = new List<Player>();
-            _currentDeck = new Deck(); ;
+            _currentDeck = new Deck();
+            GamePhase = EGamePhase.Initialization;
+            CurrentPlayerIndex = 0;
         }
         #endregion
 
@@ -87,13 +103,34 @@ namespace Data.PlayersData
 
         #region Public Methods
         /// <summary>
+        /// Play auto turn (computer player)
+        /// </summary>
+        public GameModel PlayAutoTurn()
+        {
+            ComputerPlayer computer = new ComputerPlayer();
+            if (GamePhase == EGamePhase.Initialization)
+            {
+                Players[CurrentPlayerIndex].PlayerGrid = computer.ReturnTwoCards(Players[CurrentPlayerIndex].PlayerGrid);
+
+                Logger.Instance.Log(Logger.ELevelMessage.Info, "Le joueur " + Players[CurrentPlayerIndex].Name + " a retourné deux cartes");
+                Thread.Sleep(TIME_BETWEEN_TWO_PLAYERS);
+            }
+            else if (GamePhase == EGamePhase.Playing)
+            {
+                Logger.Instance.Log(Logger.ELevelMessage.Info, "Le joueur " + Players[CurrentPlayerIndex].Name + " a fini son tour");
+                Thread.Sleep(TIME_BETWEEN_TWO_PLAYERS);
+            }
+            return this;
+        }
+
+        /// <summary>
         /// Draw cards to players
         /// </summary>
         public void DrawCardToPlayers()
         {
             if (Players.Count != 0)
             {
-                Players[0].IsPlayerTurn = true;
+                Players[CurrentPlayerIndex].IsPlayerTurn = true;
                 ClearHandOfPlayers();
                 for (int i = 0; i < DEFAULT_HEIGHT_MATRIX; i++)
                 {
@@ -116,6 +153,27 @@ namespace Data.PlayersData
                 Logger.Instance.Log(Logger.ELevelMessage.Error, "Impossible de distribuer les cartes : la liste de joueurs est vide");
             }
             
+        }
+
+        /// <summary>
+        /// Next player
+        /// </summary>
+        public void Next()
+        {
+            Players[CurrentPlayerIndex].IsPlayerTurn = false;
+            // Change Player Index
+            if (CurrentPlayerIndex == Players.Count - 1)
+            {
+                CurrentPlayerIndex = 0;
+                if (GamePhase == EGamePhase.Initialization)
+                    GamePhase = EGamePhase.Playing;
+            }
+            else
+            {
+                CurrentPlayerIndex++;
+            }
+            Players[CurrentPlayerIndex].IsPlayerTurn = true;
+            Logger.Instance.Log(Logger.ELevelMessage.Info, "Au tour de "+ Players[CurrentPlayerIndex].Name);
         }
         #endregion
 
