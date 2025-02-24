@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="Skyjo.UserControl.ViewCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Skyjo.UserControl"
+             mc:Ignorable="d" 
+             Height="58" Width="93">
+    <Grid Background="Transparent">
+        <Border CornerRadius="5"
+                BorderThickness="2"
+                BorderBrush="White"
+                Background="{Binding Color}"
+                SnapsToDevicePixels="True"
+                ClipToBounds="True">
+            <Grid Margin="2,5,2,3">
+                <TextBlock Text="{Binding Value, FallbackValue='No'}"
+                           FontSize="20"
+                           Foreground="White"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
