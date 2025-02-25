@@ -16,7 +16,7 @@ namespace Skyjo.ViewModel
         #endregion
 
         #region Constants
-        private const string DEFAULT_CARD_COLOR = "Gray";
+        private const string DEFAULT_CARD_COLOR = "LightGray";
         #endregion
 
         #region Events
@@ -69,6 +69,18 @@ namespace Skyjo.ViewModel
         }
 
         public  readonly Tuple<int, int> Position;
+
+
+        private string _isInGame;
+        public string IsInGame
+        {
+            get {  return _isInGame; }
+            set
+            {
+                _isInGame = value;
+                RaisePropertyChanged(nameof(IsInGame));
+            }
+        }
         #endregion
 
         #region Constructor
@@ -83,6 +95,7 @@ namespace Skyjo.ViewModel
             RaisePropertyChanged(nameof(Color));
             RaisePropertyChanged(nameof(Value));
             Position = new Tuple<int, int> (i, y);
+            IsInGame = "Visible";
         }
         #endregion
 

@@ -47,6 +47,8 @@ namespace Data.SkyjoData
             get { return _isVisible; }
             set { _isVisible = value; }
         }
+
+        public bool IsInGame;
         #endregion
 
         #region Constructor
@@ -72,6 +74,8 @@ namespace Data.SkyjoData
                 _color = "LightBlue";
             else
                 _color = "DarkRed";
+
+            IsInGame = true;
         }
         #endregion
 

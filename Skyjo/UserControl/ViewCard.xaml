@@ -1,7 +1,8 @@
 ﻿<UserControl x:Class="Skyjo.UserControl.ViewCard"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Height="58" Width="93">
+             Height="58" Width="93"
+             Visibility="{Binding IsInGame}">
 
     <Grid Background="Transparent">
         <Border CornerRadius="5"

@@ -73,8 +73,10 @@ namespace Core
 
             LogInFile(finalMessage);
 
-            LogUpdated?.Invoke(finalMessage);
-
+            if (level != ELevelMessage.Info) 
+            {
+                LogUpdated?.Invoke(finalMessage);
+            }
         }
         #endregion
 

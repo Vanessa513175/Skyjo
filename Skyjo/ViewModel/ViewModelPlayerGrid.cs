@@ -23,17 +23,17 @@ namespace Skyjo.ViewModel
         #endregion
 
         #region Field et Properties
-        private PlayerGrid _playerGrid;
+        public PlayerGrid PlayerGrid;
 
         /// <summary>
         /// The row count
         /// </summary>
-        public int RowCount => _playerGrid.Cards.GetLength(0);
+        public int RowCount => PlayerGrid.Cards.GetLength(0);
 
         /// <summary>
         /// The column count
         /// </summary>
-        public int ColumnCount => _playerGrid.Cards.GetLength(1);
+        public int ColumnCount => PlayerGrid.Cards.GetLength(1);
 
         /// <summary>
         /// List of view model cards
@@ -48,13 +48,13 @@ namespace Skyjo.ViewModel
         /// <param name="grid"></param>
         public ViewModelPlayerGrid(PlayerGrid grid)
         {
-            _playerGrid = grid;
+            PlayerGrid = grid;
             Cards = [];
             for (int i = 0; i < RowCount; i++)
             {
                 for (int j = 0; j < ColumnCount; j++)
                 {
-                    var c = _playerGrid.GetCard(i, j);
+                    var c = PlayerGrid.GetCard(i, j);
                     if (c != null)
                         Cards.Add(new ViewModelCard(c, i, j));
                 }
@@ -73,7 +73,28 @@ namespace Skyjo.ViewModel
         {
             RaisePropertyChanged(nameof(RowCount));
             RaisePropertyChanged(nameof(ColumnCount));
-            RaisePropertyChanged(nameof(Cards));
+
+            for (int i = 0; i < RowCount; i++)
+            {
+                for (int j = 0; j < ColumnCount; j++)
+                {
+                    if (!PlayerGrid.GetCard(i, j).IsInGame)
+                    {
+                        ChangeIsInGame(i, j);
+                    }
+                }
+            }
+
+            RaisePropertyChanged(nameof(Cards));  
+        }
+
+        private void ChangeIsInGame(int i, int j)
+        {
+            foreach (ViewModelCard card in  Cards)
+            {
+                if (card.Position.Item1 == i && card.Position.Item2 == j)
+                    card.IsInGame = "Collapsed";
+            }
         }
         #endregion
 
@@ -104,13 +125,13 @@ namespace Skyjo.ViewModel
         /// <param name="a"></param>
         public void SetCard(ViewModelCard Card, int z, int a)
         {
-            _playerGrid.SetCard(z, a, Card.CardObject);
+            PlayerGrid.SetCard(z, a, Card.CardObject);
             Cards.Clear();
             for (int i = 0; i < RowCount; i++)
             {
                 for (int j = 0; j < ColumnCount; j++)
                 {
-                    var c = _playerGrid.GetCard(i, j);
+                    var c = PlayerGrid.GetCard(i, j);
                     if (c != null)
                         Cards.Add(new ViewModelCard(c, i, j));
                 }
@@ -120,7 +141,7 @@ namespace Skyjo.ViewModel
 
         public void ChangeVisibility(bool visible, int i, int j)
         {
-            _playerGrid.GetCard(i, j).IsVisible = visible;
+            PlayerGrid.GetCard(i, j).IsVisible = visible;
             DisplayUpdate();
         }
         #endregion

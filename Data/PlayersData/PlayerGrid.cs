@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core;
 using Data.SkyjoData;
 
 namespace Data.PlayersData
@@ -47,6 +49,47 @@ namespace Data.PlayersData
         #region Methods
 
         #region Private and Protected Methods
+        /// <summary>
+        /// Delete a specific column
+        /// </summary>
+        /// <param name="i"></param>
+        private void DeleteColumn(int i)
+        {
+            Logger.Instance.Log(Logger.ELevelMessage.Info, "Vous avez le même chiffre sur une colonne ! Suppression de la colonne");
+
+            for (int j = 0; j < Height; j++)
+            {
+                for (int k = i; k < Width - 1; k++)
+                {
+                    Cards[j, k] = Cards[j, k + 1];
+                }
+                Cards[j, Width - 1] = new Card(int.MaxValue) { IsVisible = false, IsInGame = false };
+            }
+
+            CheckIfNeedToDeleteLineOrColumn();
+        }
+
+
+        /// <summary>
+        /// Delete a specific Line
+        /// </summary>
+        /// <param name="j"></param>
+        private void DeleteLine(int j)
+        {
+            Logger.Instance.Log(Logger.ELevelMessage.Info, "Vous avez le même chiffre sur une ligne ! Suppression de la ligne");
+
+            for (int i = 0; i < Width; i++)
+            {
+                for (int k = j; k < Height - 1; k++)
+                {
+                    Cards[k, i] = Cards[k + 1, i];
+                }
+                Cards[Height - 1, i] = new Card(int.MaxValue) { IsVisible = false, Color = "Pink" };
+            }
+
+            CheckIfNeedToDeleteLineOrColumn();
+        }
+
         #endregion
 
         #region Public Methods
@@ -136,6 +179,61 @@ namespace Data.PlayersData
             }
             return score;
         }
+
+        /// <summary>
+        /// Check If Need To Delete Line Or Column
+        /// </summary>
+        public void CheckIfNeedToDeleteLineOrColumn()
+        {
+            // Vérification des colonnes
+            for (int i = 0; i < Width; i++) // Boucle sur les colonnes
+            {
+                bool needToDeleteColumn = true;
+
+                for (int j = 0; j < Height - 1; j++) // Boucle sur les lignes
+                {
+                    Card current = GetCard(j, i);
+                    Card next = GetCard(j + 1, i);
+
+                    if (current == null || next == null || !current.IsVisible || !next.IsVisible ||current.Value == int.MaxValue || next.Value == int.MaxValue || current.Value != next.Value || current.Value<=0 || next.Value<=0)
+                    {
+                        needToDeleteColumn = false;
+                        break;
+                    }
+                }
+
+                if (needToDeleteColumn)
+                {
+                    DeleteColumn(i);
+                    return;
+                }
+            }
+
+            // Vérification des lignes
+            for (int j = 0; j < Height; j++) // Boucle sur les lignes
+            {
+                bool needToDeleteLine = true;
+
+                for (int i = 0; i < Width - 1; i++) // Boucle sur les colonnes
+                {
+                    Card current = GetCard(j, i);
+                    Card next = GetCard(j, i + 1);
+
+                    if (current == null || next == null || !current.IsVisible || !next.IsVisible || current.Value == int.MaxValue || next.Value == int.MaxValue || current.Value != next.Value || current.Value <= 0 || next.Value <= 0)
+                    {
+                        needToDeleteLine = false;
+                        break;
+                    }
+                }
+
+                if (needToDeleteLine)
+                {
+                    DeleteLine(j);
+                    return;
+                }
+            }
+        }
+
         #endregion
 
         #endregion

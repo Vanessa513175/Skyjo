@@ -8,6 +8,7 @@ using System.Windows.Input;
 using Core;
 using Core.RelayCommand;
 using Data.PlayersData;
+using Data.SkyjoData;
 using Skyjo.WindowManager;
 
 namespace Skyjo.ViewModel
@@ -25,23 +26,58 @@ namespace Skyjo.ViewModel
         public ICommand ExchangeCards { get; }
         public ICommand ThrowAwayDrawnCard { get; }
         public ICommand TurnOverFirstTwoCards { get; }
+        public ICommand ExchangeCardsWithCenter { get; }
+        public ICommand DrawnACard { get; }
         #endregion
 
         #region Field et Properties
 
         #region Control
+        private bool _firstStepTour;
+        public bool FirstStepTour
+        {
+            get { return _firstStepTour; }
+            set 
+            {
+                _firstStepTour = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private bool _secondStepTour;
+        public bool SecondStepTour
+        {
+            get
+            {
+                return _secondStepTour;
+            }
+            set
+            {
+                _secondStepTour = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private bool _thirdStepTour;
+        public bool ThirdStepTour
+        {
+            get
+            {
+                return _thirdStepTour;
+            }
+            set
+            {
+                _thirdStepTour = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string VisibilityCommandGlobal;
         public string VisibilityCommandInitialization;
         public string VisibilityCommandPlaying;
         public bool IsInitialisationPhase => GameModel.GamePhase == GameModel.EGamePhase.Initialization;
 
         public bool IsPlayingPhase => GameModel.GamePhase == GameModel.EGamePhase.Playing;
-
-        public bool DrawnCardThrown => _drawnCard == null && OneCardIsSelected;
-
-        public bool DiscardedCard;
-
-        public bool IsDrawnCard => _drawnCard != null && DiscardedCard;
 
         public bool OneCardIsSelected => CheckIfOneCardIsSelected();
 
@@ -120,6 +156,20 @@ namespace Skyjo.ViewModel
                     return _player.PlayerGrid.GetCurrentScore();
                 else
                     return 0;
+            }
+        }
+
+        private ViewModelCard _lastPlayedCard;
+        public ViewModelCard LastPlayedCard
+        {
+            get
+            {
+                return _lastPlayedCard;
+            }
+            set
+            {
+                _lastPlayedCard = value;
+                RaisePropertyChanged();
             }
         }
         #endregion
@@ -318,6 +368,8 @@ namespace Skyjo.ViewModel
             ExchangeCards = new RelayCommand(Command_ExchangeCards);
             ThrowAwayDrawnCard = new RelayCommand(Command_ThrowAwayDrawnCard);
             TurnOverFirstTwoCards = new RelayCommand(Command_TurnOverFirstTwoCards);
+            ExchangeCardsWithCenter = new RelayCommand(Command_ExchangeCardsWithCenter);
+            DrawnACard = new RelayCommand(Command_DrawnACard);
 
             _navigationService.GameModelUpdated += UpdateViewModel;
             
@@ -328,7 +380,8 @@ namespace Skyjo.ViewModel
 
             UpdateValues();
             
-            Logger.Instance.Log(Logger.ELevelMessage.Info, "Au tour de : " + CurrentPlayerName);
+            Logger.Instance.Log(Logger.ELevelMessage.Warning, "Au tour de : " + CurrentPlayerName);
+            FirstStepTour = true;
         }
         #endregion
 
@@ -342,14 +395,15 @@ namespace Skyjo.ViewModel
         private void UpdateViewModel(GameModel newGameModel)
         {
             GameModel = newGameModel;
-
-            if (GameModel.GamePhase == GameModel.EGamePhase.Playing && GameModel.Players[GameModel.CurrentPlayerIndex].PlayerId == _playerId)
-            {
-                DrawnCard = new ViewModelCard(GameModel.CurrentDeck.DrawCard(), -1, -1);
-                DrawnCard.ChangeVisibility(true);
-            }
-                
+   
             UpdateValues();
+
+            if (IsPlayerTurn)
+            {
+                FirstStepTour = true;
+                SecondStepTour = false;
+                ThirdStepTour = false;
+            }
         }
 
         /// <summary>
@@ -357,7 +411,6 @@ namespace Skyjo.ViewModel
         /// </summary>
         private void UpdateValues()
         {
-            DiscardedCard = false;
             // List of players
             List<Player> otherPlayers = new List<Player>();
             foreach (Player p in GameModel.Players)
@@ -456,18 +509,21 @@ namespace Skyjo.ViewModel
             if (IsPlayerTurn)
                 VisibilityCommandGlobal = "Visible";
             else
-                VisibilityCommandGlobal = "Hidden";
+                VisibilityCommandGlobal = "Collapsed";
 
             if (IsInitialisationPhase)
                 VisibilityCommandInitialization = "Visible";
             else
-                VisibilityCommandInitialization = "Hidden";
+                VisibilityCommandInitialization = "Collapsed";
 
             if (IsPlayingPhase)
                 VisibilityCommandPlaying = "Visible";
             else
-                VisibilityCommandPlaying = "Hidden";
+                VisibilityCommandPlaying = "Collapsed";
 
+            LastPlayedCard = new ViewModelCard(GameModel.CurrentDeck.LastPlayedCard, -1, -1);
+            LastPlayedCard.ChangeVisibility(true);
+            RaisePropertyChanged(nameof(LastPlayedCard));
 
 
             RaisePropertyChanged(nameof(CurrentPlayerName));
@@ -492,7 +548,6 @@ namespace Skyjo.ViewModel
             RaisePropertyChanged(nameof(IsPlayingPhase));
             RaisePropertyChanged(nameof(DrawnCard));
             RaisePropertyChanged(nameof(OneCardIsSelected));
-            RaisePropertyChanged(nameof(DrawnCardThrown));
             RaisePropertyChanged(nameof(VisibilityCommandGlobal));
             RaisePropertyChanged(nameof(VisibilityCommandInitialization));
             RaisePropertyChanged(nameof(VisibilityCommandPlaying));
@@ -513,6 +568,7 @@ namespace Skyjo.ViewModel
                     _currentPlayerGrid.ChangeVisibility(true, _selectedCard.Position.Item1, _selectedCard.Position.Item2);
                     Logger.Instance.Log(Logger.ELevelMessage.Info, "Le joueur "+CurrentPlayerName+" a retourné une de ses cartes");
                     SendToNextPlayer();
+                    ThirdStepTour = false;
                 }
                 else
                 {
@@ -548,10 +604,11 @@ namespace Skyjo.ViewModel
 
         private void Command_ThrowAwayDrawnCard()
         {
-            DiscardedCard = true;
             GameModel.CurrentDeck.LastPlayedCard = DrawnCard.CardObject;
             DrawnCard = null;
             Logger.Instance.Log(Logger.ELevelMessage.Info, "Le joueur a jeté la carte pioché");
+            SecondStepTour = false;
+            ThirdStepTour = true;
         }
 
         private void Command_TurnOverFirstTwoCards()
@@ -596,8 +653,59 @@ namespace Skyjo.ViewModel
             SendToNextPlayer();
         }
 
+        /// <summary>
+        /// Execute command ExchangeCardsWithCenter
+        /// </summary>
+        private void Command_ExchangeCardsWithCenter()
+        {
+            if (CheckIfOneCardIsSelected())
+            {
+                FirstStepTour = false;
+                ViewModelCard oldCard = _currentPlayerGrid.GetCard(_selectedCard.Position.Item1, _selectedCard.Position.Item2);
+                ViewModelCard newCard = new ViewModelCard(GameModel.CurrentDeck.LastPlayedCard, _selectedCard.Position.Item1, _selectedCard.Position.Item2);
+                _currentPlayerGrid.SetCard(newCard, _selectedCard.Position.Item1, _selectedCard.Position.Item2);
+                _selectedCard = null;
+                DrawnCard = null;
+                GameModel.CurrentDeck.LastPlayedCard = oldCard.CardObject;
+                Logger.Instance.Log(Logger.ELevelMessage.Info, "Le joueur a pris la carte du milieu");
+            }
+            else
+            {
+                Logger.Instance.Log(Logger.ELevelMessage.Warning, "Il en faut choisir qu'une seule carte à échanger dans votre jeu");
+                return;
+            }
+            SendToNextPlayer();
+        }
+
+        /// <summary>
+        /// Execute command DrawnACard
+        /// </summary>
+        private void Command_DrawnACard()
+        {
+            if (DrawnCard == null) 
+            {
+                DrawnCard = new ViewModelCard(GameModel.CurrentDeck.DrawCard(), -1, -1);
+                DrawnCard.ChangeVisibility(true);
+                FirstStepTour = false;
+                SecondStepTour = true;
+            }
+            else
+            {
+                Logger.Instance.Log(Logger.ELevelMessage.Warning, "Vous avez déjà pioché une carte");
+                return;
+            }
+        }
+
         private void SendToNextPlayer()
         {
+            FirstStepTour = false;
+            SecondStepTour = false;
+            ThirdStepTour = false;
+
+            CurrentPlayerGrid.PlayerGrid.CheckIfNeedToDeleteLineOrColumn();
+            //ICI
+            DisplayUpdate();
+
             Logger.Instance.Log(Logger.ELevelMessage.Info, "Passage au joueur suivant");
 
             if (_player != null)

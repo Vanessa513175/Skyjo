@@ -117,6 +117,10 @@ namespace Data.PlayersData
             }
             else if (GamePhase == EGamePhase.Playing)
             {
+                Tuple<PlayerGrid, Card> tuple = computer.PlayATurn(Players[CurrentPlayerIndex].PlayerGrid, CurrentDeck.DrawCard());
+                Players[CurrentPlayerIndex].PlayerGrid = tuple.Item1;
+                CurrentDeck.LastPlayedCard = tuple.Item2;
+                
                 Logger.Instance.Log(Logger.ELevelMessage.Info, "Le joueur " + Players[CurrentPlayerIndex].Name + " a fini son tour");
                 Thread.Sleep(TIME_BETWEEN_TWO_PLAYERS);
             }
