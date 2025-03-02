@@ -26,7 +26,7 @@ namespace Data.PlayersData
         public const int DEFAULT_HEIGHT_MATRIX = 3;
         public const int DEFAULT_WIDTH_MATRIX = 4;
 
-        private const int TIME_BETWEEN_TWO_PLAYERS = 5000;
+        private const int TIME_BETWEEN_TWO_PLAYERS = 3000;
         #endregion
 
         #region Events
@@ -117,14 +117,32 @@ namespace Data.PlayersData
             }
             else if (GamePhase == EGamePhase.Playing)
             {
-                Tuple<PlayerGrid, Card> tuple = computer.PlayATurn(Players[CurrentPlayerIndex].PlayerGrid, CurrentDeck.DrawCard());
+                Tuple<PlayerGrid, Deck> tuple = computer.PlayATurn(Players[CurrentPlayerIndex].PlayerGrid, CurrentDeck);
                 Players[CurrentPlayerIndex].PlayerGrid = tuple.Item1;
-                CurrentDeck.LastPlayedCard = tuple.Item2;
-                
-                Logger.Instance.Log(Logger.ELevelMessage.Info, "Le joueur " + Players[CurrentPlayerIndex].Name + " a fini son tour");
+                CurrentDeck = tuple.Item2;
+                Players[CurrentPlayerIndex].PlayerGrid.CheckIfNeedToDeleteLineOrColumn();
+
+
+                Logger.Instance.Log(Logger.ELevelMessage.Warning, "Le joueur " + Players[CurrentPlayerIndex].Name + " a fini son tour");
                 Thread.Sleep(TIME_BETWEEN_TWO_PLAYERS);
             }
             return this;
+        }
+
+        /// <summary>
+        /// Restart game
+        /// </summary>
+        public void RestartGame()
+        {
+            _currentDeck = new Deck();
+            GamePhase = EGamePhase.Initialization;
+            DrawCardToPlayers();
+            CurrentPlayerIndex = 0;
+            Players[CurrentPlayerIndex].IsPlayerTurn = true;
+            for (int i = 1; i < Players.Count; i++)
+            {
+                Players[i].IsPlayerTurn = false;
+            }
         }
 
         /// <summary>
@@ -178,6 +196,56 @@ namespace Data.PlayersData
             }
             Players[CurrentPlayerIndex].IsPlayerTurn = true;
             Logger.Instance.Log(Logger.ELevelMessage.Info, "Au tour de "+ Players[CurrentPlayerIndex].Name);
+        }
+
+        /// <summary>
+        /// Get player with best score
+        /// </summary>
+        /// <returns></returns>
+        public Player GetPlayerWithBestScore()
+        {
+            Player bestPlayer = Players[0];
+            foreach (Player player in Players)
+            {
+                if (bestPlayer.CardScore > player.CardScore)
+                    bestPlayer = player;
+            }
+            return bestPlayer;
+        }
+
+        /// <summary>
+        /// Return all cards
+        /// </summary>
+        public void ReturnAllCards()
+        {
+            foreach (Player player in Players)
+            {
+                foreach (Card card in player.PlayerGrid.Cards)
+                {
+                    card.IsVisible = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Check if player finish
+        /// </summary>
+        /// <returns></returns>
+        public bool CheckIfPlayerFinish()
+        {
+            bool finish = true;
+            foreach (Player player in Players)
+            {
+                finish = true;
+                foreach (Card card in player.PlayerGrid.Cards)
+                {
+                    if (card.IsInGame)
+                        finish = finish && (card.IsVisible);
+                }
+                if (finish)
+                    return true;
+            }
+            return false;
         }
         #endregion
 

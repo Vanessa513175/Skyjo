@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Navigation;
 using Core;
 using Core.RelayCommand;
 using Data.PlayersData;
+using Data.Statistiques;
 using Skyjo.WindowManager;
+using NavigationService = Skyjo.WindowManager.NavigationService;
 
 namespace Skyjo.ViewModel
 {
@@ -78,6 +82,7 @@ namespace Skyjo.ViewModel
 
         public ICommand AddPlayerCommand { get; private set; }
         public ICommand NextCommand { get; private set; }
+        public ICommand AddKnownPlayerCommand { get; }
         #endregion
 
         #region Constructor
@@ -90,11 +95,18 @@ namespace Skyjo.ViewModel
             _navigationService = navService;
 
             _newPlayerName = String.Empty;
-            _knowPlayers = [];
+            KnownPlayers = [];
             _playersToAdd = [];
+
+            List<PlayerStat> listOldPlayers = navService.StatManager.LoadPlayerStats();
+            foreach(PlayerStat playerStat in listOldPlayers)
+            {
+                KnownPlayers.Add(new Player(playerStat.Name, playerStat.Id, GameModel.DEFAULT_HEIGHT_MATRIX, GameModel.DEFAULT_WIDTH_MATRIX));
+            }
 
             AddPlayerCommand = new RelayCommand(AddPlayer);
             NextCommand = new RelayCommand(Next);
+            AddKnownPlayerCommand = new RelayCommandWithParameter<Player>(AddKnownPlayerToSelected);
         }
         #endregion
 
@@ -102,10 +114,36 @@ namespace Skyjo.ViewModel
 
         #region Private and Protected Methods
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private bool CheckIfPlayerExist(string name)
+        {
+            foreach(Player p in PlayersToAdd)
+            {
+                if (p.Name == name)
+                    return true;
+            }
+            foreach (Player p in KnownPlayers)
+            {
+                if (p.Name == name)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Add a player
         /// </summary>
         private void AddPlayer()
         {
+            if (CheckIfPlayerExist(NewPlayerName))
+            {
+                Logger.Instance.Log(Logger.ELevelMessage.Error, "Le joueur "+ NewPlayerName + " existe deja");
+                return;
+            } 
+
             if (!string.IsNullOrWhiteSpace(NewPlayerName))
             {
                 var newPlayer = new Player(NewPlayerName, GameModel.DEFAULT_HEIGHT_MATRIX, GameModel.DEFAULT_WIDTH_MATRIX);
@@ -116,12 +154,46 @@ namespace Skyjo.ViewModel
         }
 
         /// <summary>
+        /// Save new players in file
+        /// </summary>
+        private void SaveNewPlayers()
+        {
+            bool isPlayerWrite;
+            foreach (Player p in PlayersToAdd)
+            {
+                isPlayerWrite = false;
+                foreach (Player p2 in KnownPlayers)
+                {
+                    if (p == p2)
+                    {
+                        isPlayerWrite = true;
+                    }
+                }
+                if (!isPlayerWrite)
+                {
+                    CreatePlayerInFile(p);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Create Player In File
+        /// </summary>
+        /// <param name="p"></param>
+        private void CreatePlayerInFile(Player p)
+        {
+            PlayerStat playerStat = new PlayerStat(p.Name);
+            _navigationService.StatManager.CreatePlayer(playerStat);
+        }
+
+        /// <summary>
         /// Next command
         /// </summary>
         private void Next()
         {
             if (CanNext)
             {
+                SaveNewPlayers();
                 Logger.Instance.Log(Logger.ELevelMessage.Info, "Création d'une partie avec " + PlayersToAdd.Count + " joueurs");
                 _navigationService.ShareGameModel.Players = [.. PlayersToAdd];
 
@@ -138,6 +210,18 @@ namespace Skyjo.ViewModel
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// Add Known Player To Selected
+        /// </summary>
+        /// <param name="player"></param>
+        public void AddKnownPlayerToSelected(Player player)
+        {
+            if (player != null && !PlayersToAdd.Contains(player))
+            {
+                PlayersToAdd.Add(player);
+            }
+
+        }
         #endregion
 
         #endregion

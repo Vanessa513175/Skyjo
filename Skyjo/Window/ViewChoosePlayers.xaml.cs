@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Data.PlayersData;
 using Skyjo.ViewModel;
 using Skyjo.WindowManager;
 
@@ -27,5 +28,14 @@ namespace Skyjo.Window
             var viewModel = new ViewModelChoosePlayer(navService);
             DataContext = viewModel;
         }
+        private void KnownPlayersListBox_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListBoxItem item && item.DataContext is Player selectedPlayer)
+            {
+                var viewModel = DataContext as ViewModelChoosePlayer;
+                viewModel?.AddKnownPlayerToSelected(selectedPlayer);
+            }
+        }
+
     }
 }

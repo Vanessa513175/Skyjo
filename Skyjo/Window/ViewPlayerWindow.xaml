@@ -10,6 +10,7 @@
         Name="PlayerWindow">
 
     <Grid>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -32,6 +33,7 @@
         </Border>
 
         <Grid Grid.Row="0" Grid.Column="1" Margin="10">
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -69,6 +71,17 @@
                     <localUserControl:ViewPlayerGrid DataContext="{Binding Player2Grid}" Margin="0, 35, 0, 0"/>
                 </StackPanel>
             </Border>
+            
+            <!-- End of game -->
+            <localUserControl:EndOfGameUserControl 
+                Panel.ZIndex="100"
+                DataContext="{Binding EndOfGameController}"
+                Visibility="{Binding EndOfGameVisible}"
+                IsEnabled="{Binding IsEndOfGameVisible}"
+                Background="#80000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Grid.Row="2" Grid.Column="0"/>
 
             <!-- Center -->
             <Border Grid.Row="1" Grid.Column="1" BorderBrush="Black" BorderThickness="1" Padding="10" Margin="5">

@@ -54,6 +54,7 @@ namespace Skyjo
         private void ViewStats()
         {
             Logger.Instance.Log(Logger.ELevelMessage.Info, "Visualisation des statistiques");
+            _navigationService.NavigateTo("StatsWindow");
         }
 
         private void Quit()

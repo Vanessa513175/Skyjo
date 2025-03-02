@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls.Ribbon;
 using System.Windows.Input;
 using Core;
 using Core.RelayCommand;
@@ -19,6 +21,9 @@ namespace Skyjo.ViewModel
         #endregion
 
         #region Constants
+        private const string VISIBLE = "Visible";
+        private const string COLLAPSED = "Collapsed";
+        private const string HIDDEN = "Hidden";
         #endregion
 
         #region Events
@@ -169,6 +174,42 @@ namespace Skyjo.ViewModel
             set
             {
                 _lastPlayedCard = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private string _endOfGameVisible;
+        /// <summary>
+        /// Visibility of end of game
+        /// </summary>
+        public string EndOfGameVisible
+        {
+            get { return _endOfGameVisible; }
+            set
+            {
+                _endOfGameVisible = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private bool _isEndOfGameVisible;
+        public bool IsEndOfGameVisible
+        {
+            get { return _isEndOfGameVisible; }
+            set
+            {
+                _isEndOfGameVisible = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private ViewModelEndOfGame _endOfGameController;
+        public ViewModelEndOfGame EndOfGameController
+        {
+            get { return _endOfGameController; }
+            set
+            {
+                _endOfGameController = value;
                 RaisePropertyChanged();
             }
         }
@@ -363,6 +404,11 @@ namespace Skyjo.ViewModel
 
             _logText = String.Empty;
 
+            // End of game
+            EndOfGameController = new ViewModelEndOfGame(navService);
+            EndOfGameVisible = COLLAPSED;
+            IsEndOfGameVisible = false;
+
             // Commands
             ReturnCard = new RelayCommand(Command_ReturnCard);
             ExchangeCards = new RelayCommand(Command_ExchangeCards);
@@ -395,7 +441,21 @@ namespace Skyjo.ViewModel
         private void UpdateViewModel(GameModel newGameModel)
         {
             GameModel = newGameModel;
-   
+
+
+            if (GameModel.EGamePhase.End == GameModel.GamePhase)
+            {
+                EndOfGameController.IsEndOfGame(GameModel.GetPlayerWithBestScore().Name, GameModel.GetPlayerWithBestScore().CardScore, _playerId);
+                RaisePropertyChanged(nameof(EndOfGameController));
+                EndOfGameVisible = VISIBLE;
+                IsEndOfGameVisible = true;
+            }
+            else
+            {
+                EndOfGameVisible = COLLAPSED;
+                IsEndOfGameVisible = false;
+            }
+            
             UpdateValues();
 
             if (IsPlayerTurn)
@@ -507,19 +567,23 @@ namespace Skyjo.ViewModel
         private void DisplayUpdate()
         {
             if (IsPlayerTurn)
-                VisibilityCommandGlobal = "Visible";
+                VisibilityCommandGlobal = VISIBLE;
             else
-                VisibilityCommandGlobal = "Collapsed";
+                VisibilityCommandGlobal = HIDDEN;
 
             if (IsInitialisationPhase)
-                VisibilityCommandInitialization = "Visible";
+                VisibilityCommandInitialization = VISIBLE;
             else
-                VisibilityCommandInitialization = "Collapsed";
+                VisibilityCommandInitialization = COLLAPSED;
 
             if (IsPlayingPhase)
-                VisibilityCommandPlaying = "Visible";
+                VisibilityCommandPlaying = VISIBLE;
             else
-                VisibilityCommandPlaying = "Collapsed";
+                VisibilityCommandPlaying = COLLAPSED;
+
+            RaisePropertyChanged(nameof(VisibilityCommandPlaying));
+            RaisePropertyChanged(nameof(VisibilityCommandInitialization));
+            RaisePropertyChanged(nameof(VisibilityCommandGlobal));
 
             LastPlayedCard = new ViewModelCard(GameModel.CurrentDeck.LastPlayedCard, -1, -1);
             LastPlayedCard.ChangeVisibility(true);
@@ -551,6 +615,8 @@ namespace Skyjo.ViewModel
             RaisePropertyChanged(nameof(VisibilityCommandGlobal));
             RaisePropertyChanged(nameof(VisibilityCommandInitialization));
             RaisePropertyChanged(nameof(VisibilityCommandPlaying));
+
+            RaisePropertyChanged(nameof(EndOfGameController));
         }
         private void OnLogUpdated(string newLog)
         {
@@ -658,7 +724,7 @@ namespace Skyjo.ViewModel
         /// </summary>
         private void Command_ExchangeCardsWithCenter()
         {
-            if (CheckIfOneCardIsSelected())
+            if (CheckIfOneCardIsSelected() && _selectedCard != null)
             {
                 FirstStepTour = false;
                 ViewModelCard oldCard = _currentPlayerGrid.GetCard(_selectedCard.Position.Item1, _selectedCard.Position.Item2);

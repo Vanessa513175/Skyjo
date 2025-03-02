@@ -89,7 +89,6 @@ namespace Data.PlayersData
 
             CheckIfNeedToDeleteLineOrColumn();
         }
-
         #endregion
 
         #region Public Methods
@@ -173,7 +172,7 @@ namespace Data.PlayersData
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    if (Cards[i, j].IsVisible)
+                    if (Cards[i, j].IsVisible && Cards[i, j].Value!=int.MaxValue && Cards[i, j].Value != int.MinValue)
                         score += Cards[i, j].Value;
                 }
             }
@@ -186,23 +185,28 @@ namespace Data.PlayersData
         public void CheckIfNeedToDeleteLineOrColumn()
         {
             // Vérification des colonnes
+            bool isCard = false;
             for (int i = 0; i < Width; i++) // Boucle sur les colonnes
             {
                 bool needToDeleteColumn = true;
+                isCard = false;
 
                 for (int j = 0; j < Height - 1; j++) // Boucle sur les lignes
                 {
                     Card current = GetCard(j, i);
                     Card next = GetCard(j + 1, i);
-
-                    if (current == null || next == null || !current.IsVisible || !next.IsVisible ||current.Value == int.MaxValue || next.Value == int.MaxValue || current.Value != next.Value || current.Value<=0 || next.Value<=0)
+                    if (!(current == null || next == null || current.Value == int.MaxValue || next.Value == int.MaxValue))
                     {
-                        needToDeleteColumn = false;
-                        break;
+                        isCard = true;
+                        if (!current.IsVisible || !next.IsVisible || current.Value != next.Value || current.Value <= 0 || next.Value <= 0)
+                        {
+                            needToDeleteColumn = false;
+                            break;
+                        }
                     }
                 }
 
-                if (needToDeleteColumn)
+                if (isCard && needToDeleteColumn)
                 {
                     DeleteColumn(i);
                     return;
@@ -213,20 +217,24 @@ namespace Data.PlayersData
             for (int j = 0; j < Height; j++) // Boucle sur les lignes
             {
                 bool needToDeleteLine = true;
+                isCard = false;
 
                 for (int i = 0; i < Width - 1; i++) // Boucle sur les colonnes
                 {
                     Card current = GetCard(j, i);
                     Card next = GetCard(j, i + 1);
-
-                    if (current == null || next == null || !current.IsVisible || !next.IsVisible || current.Value == int.MaxValue || next.Value == int.MaxValue || current.Value != next.Value || current.Value <= 0 || next.Value <= 0)
+                    if (!(current == null || next == null || current.Value == int.MaxValue || next.Value == int.MaxValue))
                     {
-                        needToDeleteLine = false;
-                        break;
+                        isCard = true;
+                        if (current.IsVisible || !next.IsVisible || current.Value != next.Value || current.Value <= 0 || next.Value <= 0)
+                        {
+                            needToDeleteLine = false;
+                            break;
+                        }
                     }
                 }
 
-                if (needToDeleteLine)
+                if (isCard && needToDeleteLine)
                 {
                     DeleteLine(j);
                     return;

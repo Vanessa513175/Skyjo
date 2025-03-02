@@ -1,0 +1,50 @@
+﻿<Window x:Class="Skyjo.Window.StatsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Skyjo.Window"
+        mc:Ignorable="d"
+        Title="Statistiques des Joueurs"
+        Height="450" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="#8B5A2B">
+
+    <Grid Margin="10" Background="#F5DEB3">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Barre de tri -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,10">
+            <TextBlock Text="Trier par : " VerticalAlignment="Center" Margin="5"/>
+            <ComboBox ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSortOption}" Width="150" Margin="5"/>
+
+            <TextBlock Text="Ordre : " VerticalAlignment="Center" Margin="5"/>
+            <ComboBox ItemsSource="{Binding SortOrders}" SelectedItem="{Binding SelectedSortOrder}" Width="120" Margin="5"/>
+
+            <Button Content="Appliquer" Command="{Binding SortCommand}" Width="100" Margin="5"/>
+        </StackPanel>
+
+        <!-- Tableau des statistiques -->
+        <DataGrid Grid.Row="1" ItemsSource="{Binding PlayerStats}" AutoGenerateColumns="False" 
+                  CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False"
+                  Background="WhiteSmoke" RowHeaderWidth="0">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="200" />
+                <DataGridTextColumn Header="Meilleur Score" Binding="{Binding BestScore}" Width="Auto" />
+                <DataGridTextColumn Header="Meilleur jour" Binding="{Binding BestScoreDate}" Width="Auto"/>
+                <DataGridTextColumn Header="Parties Gagnées" Binding="{Binding GamesWon}" Width="Auto" />
+                <DataGridTextColumn Header="Parties Jouées" Binding="{Binding GamesPlayed}" Width="Auto" />
+                <DataGridTextColumn Header="Dernière Partie" Binding="{Binding LastGameDate}" Width="Auto"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Bouton de fermeture -->
+        <Button Grid.Row="2" Content="Fermer" Width="100" Height="30"
+                HorizontalAlignment="Center" Margin="10"
+                Command="{Binding CloseCommand}"/>
+    </Grid>
+</Window>

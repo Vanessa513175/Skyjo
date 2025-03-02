@@ -78,7 +78,7 @@ namespace Skyjo.ViewModel
             {
                 for (int j = 0; j < ColumnCount; j++)
                 {
-                    if (!PlayerGrid.GetCard(i, j).IsInGame)
+                    if (!PlayerGrid.GetCard(i, j).IsInGame || PlayerGrid.GetCard(i, j).Value == int.MaxValue)
                     {
                         ChangeIsInGame(i, j);
                     }

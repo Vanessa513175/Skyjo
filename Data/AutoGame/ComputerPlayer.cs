@@ -50,6 +50,9 @@ namespace Data.AutoGame
         }
         private int CheckIfNumberIsInLine(PlayerGrid grid, int number)
         {
+            int totalCard = 0;
+            int visibleCard = 0;
+
             // for each line
             int nbrSameValue;
             for (int j = 0; j < grid.Width; j++)
@@ -57,12 +60,17 @@ namespace Data.AutoGame
                 nbrSameValue = 0;
                 for (int i = 0; i < grid.Height; i++) 
                 {
+                    totalCard++;
+                    if (grid.GetCard(i, j).IsVisible)
+                    {
+                        visibleCard++;
+                    }
                     if (number == grid.GetCard(i, j).Value)
                     {
                         nbrSameValue++;
                     }
                 }
-                if (nbrSameValue > grid.Width - 1)
+                if (nbrSameValue >= grid.Width - 1)
                 {
                     return j;
                 }
@@ -72,6 +80,8 @@ namespace Data.AutoGame
 
         private int CheckIfNumberIsInColumn(PlayerGrid grid, int number)
         {
+            int totalCard = 0;
+            int visibleCard = 0;
             // for each column
             int nbrSameValue;
             for (int i = 0; i < grid.Height; i++)
@@ -79,12 +89,25 @@ namespace Data.AutoGame
                 nbrSameValue = 0;
                 for (int j = 0; j < grid.Width; j++)
                 {
+                    totalCard++;
+                    if (grid.GetCard(i, j).IsVisible)
+                    {
+                        visibleCard++;
+                    }
                     if (number == grid.GetCard(i, j).Value)
                     {
                         nbrSameValue++;
                     }
                 }
-                if (nbrSameValue> grid.Width-1)
+                if (nbrSameValue == 1)
+                {
+                    int nbrCardNoVisible = totalCard - visibleCard;
+                    if (nbrCardNoVisible > 5 && number >= 7)
+                    {
+                        return i;
+                    }
+                }
+                if (nbrSameValue>= grid.Height - 1)
                 {
                     return i;
                 }
@@ -94,6 +117,10 @@ namespace Data.AutoGame
 
         private Tuple<PlayerGrid, Card>? CheckIfNumberCanReplaceAVisibleCard(PlayerGrid grid, Card card)
         {
+            if (card.Value > 6)
+            {
+                return null;
+            }
             Tuple<int, int> bestTuple = new Tuple<int, int>(-1, -1);
             int bestDiff = int.MinValue;
             int diff = 0;
@@ -112,8 +139,12 @@ namespace Data.AutoGame
                     }
                 }
             }
-            if (bestDiff > 3)
+            if (bestDiff > 5)
             {
+                if (grid.GetCard(bestTuple.Item1, bestTuple.Item2).Value <= card.Value)
+                {
+                    return null;
+                }
                 Card oldCard = grid.GetCard(bestTuple.Item1, bestTuple.Item2);
                 card.IsVisible = true;
                 grid.SetCard(bestTuple.Item1, bestTuple.Item2, card);
@@ -163,7 +194,7 @@ namespace Data.AutoGame
             {
                 for (int i = 0; i < grid.Height; i++)
                 {
-                    if (card.Value != grid.GetCard(i, line).Value)
+                    if (card.Value == grid.GetCard(i, line).Value)
                     {
                         Card oldCard = grid.GetCard(i, line);
                         card.IsVisible = true;
@@ -179,7 +210,7 @@ namespace Data.AutoGame
                 {
                     for (int j = 0; j < grid.Width; j++)
                     {
-                        if (card.Value != grid.GetCard(column, j).Value)
+                        if (card.Value == grid.GetCard(column, j).Value)
                         {
                             Card oldCard = grid.GetCard(column, j);
                             card.IsVisible = true;
@@ -195,37 +226,91 @@ namespace Data.AutoGame
             }
             return null;
         }
+
+        private Tuple<PlayerGrid, Deck>? MiddleCardIsGood(PlayerGrid grid, Deck deck)
+        {
+            var tuple = CheckLineColumnSameNumber(grid, deck.LastPlayedCard);
+            if (tuple != null)
+            {
+                deck.LastPlayedCard = tuple.Item2;
+                return new Tuple<PlayerGrid, Deck>(tuple.Item1, deck);
+            }
+            else
+            {
+                if (deck.LastPlayedCard.Value < 5)
+                {
+                    var tuple2 = CheckIfNumberCanReplaceAVisibleCard(grid, deck.LastPlayedCard);
+                    if (tuple2 != null)
+                    {
+                        deck.LastPlayedCard = tuple2.Item2;
+                        return new Tuple<PlayerGrid, Deck>(tuple2.Item1, deck);
+                    }
+                    else
+                    {
+                        var tuple3 = CheckIfCardCanReaplceAHiddenCard(grid, deck.LastPlayedCard);
+                        if (tuple3 != null)
+                        {
+                            deck.LastPlayedCard = tuple3.Item2;
+                            return new Tuple<PlayerGrid, Deck>(tuple3.Item1, deck);
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
         #endregion
 
         #region Public Methods
         public PlayerGrid ReturnTwoCards(PlayerGrid grid)
         {
             Random random = new Random();
-            int row = random.Next(0, grid.Width-1);
-            int column = random.Next(0, grid.Height-1);
 
-            if (grid.GetCard(row, column) != null)
-                grid.GetCard(row, column).IsVisible = true;
-            else
-                Logger.Instance.Log(Logger.ELevelMessage.Error, "Impossible de retourner : "+row + " " + column);
+            int row1 = random.Next(0, grid.Width - 1);
+            int column1 = random.Next(0, grid.Height - 1);
 
-            random = new Random();
-            row = random.Next(0, grid.Width - 1);
-            column = random.Next(0, grid.Height - 1);
-            if (grid.GetCard(row, column) != null)
-                grid.GetCard(row, column).IsVisible = true;
+            if (grid.GetCard(row1, column1) != null)
+                grid.GetCard(row1, column1).IsVisible = true;
             else
-                Logger.Instance.Log(Logger.ELevelMessage.Error, "Impossible de retourner : " + row + " " + column);
+                Logger.Instance.Log(Logger.ELevelMessage.Error, "Impossible de retourner : " + row1 + " " + column1);
+
+            int row2, column2;
+            do
+            {
+                row2 = random.Next(0, grid.Width - 1);
+                column2 = random.Next(0, grid.Height - 1);
+            }
+            while (row1 == row2 && column1 == column2);
+
+            if (grid.GetCard(row2, column2) != null)
+                grid.GetCard(row2, column2).IsVisible = true;
+            else
+                Logger.Instance.Log(Logger.ELevelMessage.Error, "Impossible de retourner : " + row2 + " " + column2);
 
             return grid;
         }
 
-        public Tuple<PlayerGrid,Card> PlayATurn(PlayerGrid grid, Card card) 
+
+        public Tuple<PlayerGrid,Deck> PlayATurn(PlayerGrid grid, Deck deck) 
         {
-            Tuple<PlayerGrid, Card> tuple;
-            tuple = CheckLineColumnSameNumber(grid, card);
-            if (tuple != null)
+            Tuple<PlayerGrid, Deck> tuple;
+
+            //Check if middle card is good
+            var tupleWithMiddle = MiddleCardIsGood(grid, deck);
+            if (tupleWithMiddle != null)
             {
+                return tupleWithMiddle;
+            }
+            Card card = deck.DrawCard();
+            Tuple<PlayerGrid, Card> tupleBis;
+            tupleBis = CheckLineColumnSameNumber(grid, card);
+            if (tupleBis != null)
+            {
+                deck.LastPlayedCard = tupleBis.Item2;
+                tuple = new Tuple<PlayerGrid, Deck>(tupleBis.Item1, deck);
                 return tuple;
             }
 
@@ -233,22 +318,28 @@ namespace Data.AutoGame
             if (grid.GetCurrentScore() < 8 || !IsMostVisibleCard(grid) || grid.GetCurrentScore() > 20)
             {
 
-                tuple = CheckIfNumberCanReplaceAVisibleCard(grid, card);
-                if (tuple != null)
+                tupleBis = CheckIfNumberCanReplaceAVisibleCard(grid, card);
+                if (tupleBis != null)
                 {
+                    deck.LastPlayedCard = tupleBis.Item2;
+                    tuple = new Tuple<PlayerGrid, Deck>(tupleBis.Item1, deck);
                     return tuple;
                 }
             }
             if (card.Value < 6)
             {
-                tuple = CheckIfCardCanReaplceAHiddenCard(grid, card);
-                if (tuple != null)
+                tupleBis = CheckIfCardCanReaplceAHiddenCard(grid, card);
+                if (tupleBis != null)
                 {
+                    deck.LastPlayedCard = tupleBis.Item2;
+                    tuple = new Tuple<PlayerGrid, Deck>(tupleBis.Item1, deck);
                     return tuple;
                 }
             }
             grid = ReturnACard(grid);
-            return new Tuple<PlayerGrid, Card>(grid, card);
+            deck.LastPlayedCard = card;
+            tuple = new Tuple<PlayerGrid, Deck>(grid, deck);
+            return tuple;
         }
         #endregion
 

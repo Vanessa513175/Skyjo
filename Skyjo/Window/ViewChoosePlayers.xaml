@@ -23,9 +23,16 @@
         <StackPanel Grid.Row="0" Grid.Column="0" Margin="20">
             <TextBlock Text="Personnes Connues" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
             <ListBox x:Name="KnownPlayersListBox" 
-                     DisplayMemberPath="Name" 
-                     Height="180" 
-                     ItemsSource="{Binding KnownPlayers}" />
+         DisplayMemberPath="Name" 
+         Height="180" 
+         ItemsSource="{Binding KnownPlayers}">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <EventSetter Event="MouseDoubleClick" Handler="KnownPlayersListBox_DoubleClick"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+
         </StackPanel>
 
         <StackPanel Grid.Row="0" Grid.Column="1" Margin="20">

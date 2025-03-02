@@ -19,7 +19,7 @@ namespace Core
         #endregion
 
         #region Constants
-        private const string FILE_PATH = "C:\\Users\\vanes\\Documents\\ApplicationUno\\Logs";
+        private const string FILE_PATH = "D:\\SkyjoData\\Logs";
         #endregion
 
         #region Events

@@ -72,6 +72,14 @@ namespace Data.PlayersData
             _isPlayerTurn = false;
             PlayerGrid = new PlayerGrid(height, width);
         }
+
+        public Player(string name, Guid id, int height, int width)
+        {
+            _playerId = id;
+            _name = name;
+            _isPlayerTurn = false;
+            PlayerGrid = new PlayerGrid(height, width);
+        }
         #endregion
 
         #region Methods
