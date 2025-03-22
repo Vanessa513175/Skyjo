@@ -107,7 +107,7 @@ namespace Data.PlayersData
         /// </summary>
         public GameModel PlayAutoTurn()
         {
-            ComputerPlayer computer = new ComputerPlayer();
+            AutoGamer computer = new AutoGamer();
             if (GamePhase == EGamePhase.Initialization)
             {
                 Players[CurrentPlayerIndex].PlayerGrid = computer.ReturnTwoCards(Players[CurrentPlayerIndex].PlayerGrid);

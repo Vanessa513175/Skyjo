@@ -92,7 +92,7 @@ namespace Data.Statistiques
         {
             List<PlayerStat> players = LoadPlayerStats();
 
-            PlayerStat playerStat = players.FirstOrDefault(p => p.Id == player.PlayerId);
+            PlayerStat playerStat = players.FirstOrDefault(p => p.Name == player.Name);
 
             if (playerStat == null)
             {

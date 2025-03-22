@@ -180,6 +180,26 @@ namespace Data.PlayersData
         }
 
         /// <summary>
+        /// Get the count of visible card
+        /// </summary>
+        /// <returns></returns>
+        public int GetCountVisibleCard()
+        {
+            int count = 0;
+            for (int i = 0; i < Height; i++)
+            {
+                for (int j = 0; j < Width; j++)
+                {
+                    if (Cards[i, j].IsVisible && Cards[i, j].IsInGame)
+                    {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
         /// Check If Need To Delete Line Or Column
         /// </summary>
         public void CheckIfNeedToDeleteLineOrColumn()

@@ -302,6 +302,7 @@ namespace Data.AutoGame
             var tupleWithMiddle = MiddleCardIsGood(grid, deck);
             if (tupleWithMiddle != null)
             {
+                Logger.Instance.Log(Logger.ELevelMessage.Warning, $"Joueur a échangé carte du milieu car good");
                 return tupleWithMiddle;
             }
             Card card = deck.DrawCard();
